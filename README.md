@@ -1,12 +1,14 @@
 ### 1. #import和#include的区别,@class代表什么
 * "#import"和"#include"都是头文件包含,"#import"能保证只包含一次,不会发生重复包含,
  "#include"是c语言中的包含头文件为了保证不被重复包含,一般加上条件编译
+
  ```c
     #ifndef _FS                         
     #define _FS
     #include"header.h"
     #endf
  ```
+ 
 * @class 类前向申明,就是相当于告诉编辑器有这个类,但类的定义在后面提供,放置循环引入
 
 ### 2.谈谈Obj-c的内存管理方式及过程
