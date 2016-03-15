@@ -83,7 +83,7 @@ Cocoa supplies two root classes: NSObject and NSProxy.
 * copy：生成不可变对象、需要拷贝时使用
 * nonatomic：不要求线程安全时使用，可提高性能，通常都会使用
 
-### 控制器的生命周期,及处理的操作
+### 7.控制器的生命周期,及处理的操作
 1. alloc  创建对象,分配空间
 2. init (initWithNibName) 初始化对象,初始化数据
 3. loadView 从nib载入视图,通常情况下不需要干涉这一步,除非没有使用xib创建视图
@@ -108,7 +108,7 @@ Cocoa supplies two root classes: NSObject and NSProxy.
 * -(void)viewDidDisappear:(BOOL)animated	
 	* 我们可以重写这个方法,对已经消失,或者被覆盖,或者已经隐藏了的视图做一些其他操作
 	
-### viewcontroller在从创建到销毁的一个完整生命周期中依次调用了哪些方法
+### 8.viewcontroller在从创建到销毁的一个完整生命周期中依次调用了哪些方法
 <div>视图的生命周期其实可以理解为Load-Present-Hidden(加载-展现-隐藏)三个阶段，如果从ViewController中方法中执行的顺序来看，顺序应该是这样的:
 loadView→viewDidLoad→viewWillAppear→viewDidAppear→viewWillDisappear→viewDidDisappear→dealloc</div>
 ***
@@ -119,7 +119,7 @@ loadView→viewDidLoad→viewWillAppear→viewDidAppear→viewWillDisappear→vi
 <div> 官网给出的示例图</div>
 <br>
 <img src = "http://img2.tuicool.com/JR7vy2e.png!web" width =400px>	
-### 什么情况下使用block会造成循环引用
+### 9.什么情况下使用block会造成循环引用
 * 在block 中我们通常情况下会用copy修饰,当block被copy的时候,会对block中的用到的对象进行强引用(arc),或者引用计数+1(mrc)
 <div>错误的情况 </div>
  <pre>
@@ -132,7 +132,7 @@ loadView→viewDidLoad→viewWillAppear→viewDidAppear→viewWillDisappear→vi
 };
  </pre>
 
-* 当block为其他对象的一个属性,block又引用了这个对象的其他属性,那么就会对这个变量本身产生强应用，那么变量本身和他自己的Block属性就形成了循环引用,arc下修改成这个样子
+* 10.当block为其他对象的一个属性,block又引用了这个对象的其他属性,那么就会对这个变量本身产生强应用，那么变量本身和他自己的Block属性就形成了循环引用,arc下修改成这个样子
 <pre> 
 @property(nonatomic, readwrite, copy) completionBlock completionBlock;
 __weak typeof(self) weakSelf = self;
@@ -144,12 +144,12 @@ self.completionBlock = ^ {
 </pre>
 * 注意事项 :也就是生成一个对自身对象的弱引用，如果是倒霉催的项目还需要支持iOS4.3，就用__unsafe_unretained替代__weak。如果是non-ARC环境下就将__weak替换为__block即可。non-ARC情况下，__block变量的含义是在Block中引入一个新的结构体成员变量指向这个__block变量，那么__block typeof(self) weakSelf = self;就表示Block别再对self对象retain啦，这就打破了循环引用。
 	
-###在xib中使用AutoLayou布局UIScrollerView需要注意什么
+###11.在xib中使用AutoLayou布局UIScrollerView需要注意什么
 1. 给scrollerView设置一个view作为contentView,并把添加到scrollerView上的空间添加带contentView上
 2. 为scrollerView设置滑动的方向(左右或者上下),并设置contentView的size
 3. 添加导航栏的控制器,设置控制器的automaticallyAdjustsScrollViewInsets为NO(默认为yes)
 
-### 如何修改一个UITextFiled的Placehoder字体颜色
+### 12.如何修改一个UITextFiled的Placehoder字体颜色
 <p>1. 通过kvc</p>
 <pre>
 textField.placeholder = @"username is in here!";  //设置placehoder的字
@@ -158,7 +158,7 @@ textField.placeholder = @"username is in here!";  //设置placehoder的字
 </pre>
 * 注意 : 一般修改只读的,或者封装空间里某个子视图,用kvc
 
-### 解释一下iOS应用沙盒机制,沙盒路径有几种,分别对应路径下文件的特点是什么
+### 13.解释一下iOS应用沙盒机制,沙盒路径有几种,分别对应路径下文件的特点是什么
 * iOS中的沙盒机制是一种安全体系,每个iOS程序都有一个独立的文件系统(存储空间),只能在自己的文件系统进行操作,这个区域叫做沙盒.所有非代码的文件都应该保存在这个地方,例如plist文件,图像等
 * 沙盒的目录结构	<br>
 <img src="http://7xrv8n.com1.z0.glb.clouddn.com/62317-e49c692cb5d9ebb3.png" width = "240px" height = "120px">
