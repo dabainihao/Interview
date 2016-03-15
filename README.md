@@ -82,3 +82,115 @@ Cocoa supplies two root classes: NSObject and NSProxy.
 * retain：MRC下才能使用，表示对象强引用
 * copy：生成不可变对象、需要拷贝时使用
 * nonatomic：不要求线程安全时使用，可提高性能，通常都会使用
+
+### 控制器的生命周期,及处理的操作
+1. alloc  创建对象,分配空间
+2. init (initWithNibName) 初始化对象,初始化数据
+3. loadView 从nib载入视图,通常情况下不需要干涉这一步,除非没有使用xib创建视图
+4. viewDidLoad 载入完成,可以进行自定义数据以及动态创建其他控件
+5. viewWillAppear 视图将出现在屏幕之前,马上这个视图就会展现在屏幕上
+6. viewDidAppear 视图已在屏幕上渲染完成
+<p>当一个视图从屏幕上移除并销毁的时候执行的顺序,这个顺序差不多跟上面的相反</p>
+1. viewVillDisappear 视图将从屏幕上移除之前执行
+2. viewDidDisappear 视图已经被从屏幕上移除,用户看不到这个视图了
+3. dealloc 视图被销毁,此处需要对你在init和viewDidLoad中的对象进行释放
+<p> 执行的操作 </p>
+* -(void)viewDidLoad 
+	* 当一个app在载入时会先通过调用loadView方法或者载入IB中创建的初始化界面的方法,将视图载入到内存中.然后在viewDidLoad中进行进一步的设置,通常,我们对于各种初始化数据的载入,初始设定等很多内容都在这个方法中实现,这是个很常用并且很重要的方法,这个方法只会在App刚开始调用的时候调用一次,以后都不会再调动它了,所有只能用来做初始化设置
+	* view从xib
+* -(void)viewWillAppear:(BOOL)animated;
+	* 系统在载入所有数据后,将在屏幕上显示视图,这时会先调用这个方法,通常我们会利用这个方法,对即将显示的视图做进一步的设置,例如我们可以利用这个方法来设置设备不同方向时改如何显示
+	* 在app有多个视图时,在试图间切换的时候,并不会再次载入viewDidLoad方法,所以如果在调入视图时需要对数据进行更新,我们只能在这个方法中实现
+* -(void)viewDidAppear:(BOOL)animated；
+	* 	视图已在屏幕上渲染完毕,当我们在有时候我们不能在viewWillAppear方法里,在视图进行更新,我们可以在这里对视图进行进一步的设置
+* -(void)viewWillDisappear:(BOOL)animated；
+	* 在视图变换时,当前视图即将被移除,或者被覆盖时,会调用这个方法进行一些善后的处理和设置,需要注意的是当我们被按home键,这个方法不会被执行,app显示的view,仍是挂起时候的view
+* -(void)viewDidDisappear:(BOOL)animated	
+	* 我们可以重写这个方法,对已经消失,或者被覆盖,或者已经隐藏了的视图做一些其他操作
+	
+### viewcontroller在从创建到销毁的一个完整生命周期中依次调用了哪些方法
+<div>视图的生命周期其实可以理解为Load-Present-Hidden(加载-展现-隐藏)三个阶段，如果从ViewController中方法中执行的顺序来看，顺序应该是这样的:
+loadView→viewDidLoad→viewWillAppear→viewDidAppear→viewWillDisappear→viewDidDisappear→dealloc</div>
+***
+<div>loadView：一般情况下不用用到，除非需要重写设置View；</div>
+<div>viewDidLoad/dealloc:视图加载完成之后的设置和视图销毁的时候调用；</div>
+<div>viewWillAppear/viewWillDisappear:视图即将呈现和视图即将消失；</div>
+<div>viewDidAppear/viewDidDisappear:视图展现在屏幕的时候和视图完全消失在屏幕的时候调用，默认不做任何操作； </div>
+<div> 官网给出的示例图</div>
+<br>
+<img src = "http://img2.tuicool.com/JR7vy2e.png!web" width =400px>	
+### 什么情况下使用block会造成循环引用
+* 在block 中我们通常情况下会用copy修饰,当block被copy的时候,会对block中的用到的对象进行强引用(arc),或者引用计数+1(mrc)
+<div>错误的情况 </div>
+ <pre>
+ @property(nonatomic, readwrite, copy) completionBlock completionBlock;
+ self.completionBlock = ^ {
+        if (self.success) {
+            self.success(self.responseData);
+        }
+    }
+};
+ </pre>
+
+* 当block为其他对象的一个属性,block又引用了这个对象的其他属性,那么就会对这个变量本身产生强应用，那么变量本身和他自己的Block属性就形成了循环引用,arc下修改成这个样子
+<pre> 
+@property(nonatomic, readwrite, copy) completionBlock completionBlock;
+__weak typeof(self) weakSelf = self;
+self.completionBlock = ^ {
+    if (weakSelf.success) {
+        weakSelf.success(weakSelf.responseData);
+    }
+};
+</pre>
+* 注意事项 :也就是生成一个对自身对象的弱引用，如果是倒霉催的项目还需要支持iOS4.3，就用__unsafe_unretained替代__weak。如果是non-ARC环境下就将__weak替换为__block即可。non-ARC情况下，__block变量的含义是在Block中引入一个新的结构体成员变量指向这个__block变量，那么__block typeof(self) weakSelf = self;就表示Block别再对self对象retain啦，这就打破了循环引用。
+	
+###在xib中使用AutoLayou布局UIScrollerView需要注意什么
+1. 给scrollerView设置一个view作为contentView,并把添加到scrollerView上的空间添加带contentView上
+2. 为scrollerView设置滑动的方向(左右或者上下),并设置contentView的size
+3. 添加导航栏的控制器,设置控制器的automaticallyAdjustsScrollViewInsets为NO(默认为yes)
+
+### 如何修改一个UITextFiled的Placehoder字体颜色
+<p>1. 通过kvc</p>
+<pre>
+textField.placeholder = @"username is in here!";  //设置placehoder的字
+[textField setValue:[UIColor redColor] forKeyPath:@"_placeholderLabel.textColor"]; // 修改颜色  
+[textField setValue:[UIFont boldSystemFontOfSize:16] forKeyPath:@"_placeholderLabel.font"];  //修改字体大小
+</pre>
+* 注意 : 一般修改只读的,或者封装空间里某个子视图,用kvc
+
+### 解释一下iOS应用沙盒机制,沙盒路径有几种,分别对应路径下文件的特点是什么
+* iOS中的沙盒机制是一种安全体系,每个iOS程序都有一个独立的文件系统(存储空间),只能在自己的文件系统进行操作,这个区域叫做沙盒.所有非代码的文件都应该保存在这个地方,例如plist文件,图像等
+* 沙盒的目录结构	<br>
+<img src="http://7xrv8n.com1.z0.glb.clouddn.com/62317-e49c692cb5d9ebb3.png" width = "240px" height = "120px">
+* 每个文件夹的作用
+	* Documents保存应用程序重要的数据文件和用户数据文件,iTunes同步时会备份这个目录
+	* /Library/Caches 保存应用程序使用时产生的支持文件和缓存文件，还有日志文件最好也放在这个目录。iTunes 同步时不会备份该目录。
+	* /Library/Preferences 保存应用程序的偏好设置文件（使用 NSUserDefaults 类设置时创建，不应该手动创建）
+ 	* /tmp/ 保存应用运行时所需要的临时数据，iphone 重启时，会清除该目录下所有文件。
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
