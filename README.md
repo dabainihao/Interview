@@ -168,7 +168,51 @@ textField.placeholder = @"username is in here!";  //设置placehoder的字
 	* /Library/Preferences 保存应用程序的偏好设置文件（使用 NSUserDefaults 类设置时创建，不应该手动创建）
  	* /tmp/ 保存应用运行时所需要的临时数据，iphone 重启时，会清除该目录下所有文件。
 
+###14.说一下类和类别,类扩展的的区别
+1. 类
+	* 对象是对客观事物的抽象，类是对对象的抽象。类是一种抽象的数据类型,它们的关系是，对象是类的实例，类是对象的模板
+	* <p> 下图是关系</p>
+	 <img src = "http://d.hiphotos.baidu.com/baike/c0%3Dbaike80%2C5%2C5%2C80%2C26/sign=a23a37d36b061d95694b3f6a1a9d61b4/e4dde71190ef76c6acd4b5c09816fdfaae5167d2.jpg" width = 400px , height = 300px>
+2. 类扩展(Extension)
+	*  能为某个类附加额外的属性，成员变量，方法声明
+	* 一般的类扩展写到.m文件中
+	* 一般的私有属性写到类扩展
+<p> 具体的使用</p>
+<pre>
+	@interface Mitchell()
+	//属性
+	//方法
+	@end
+</pre>	 
 
+<p style = "text-indent: 2em""> 3 .分类(Category) </p>
+	* 将类的实现分散到多个不同文件或多个不同框架中。
+	* 创建对私有方法的前向引用。
+	* 向对象添加非正式协议。
+* <p> 注意事项 </p>
+ 	* 分类只能增加方法（包括类方法和对象方法），不能增加成员变量
+ 	* 在分类方法的实现中可以访问原来类中的成员变量；
+	* 分类中可以重新实现原来类中的方法，但是会覆盖掉原来的方法，导致原来的方法无法再使用（警告）；
+	* 方法调用的优先级：分类->原来的类->父类，若包含有多个分类，则最后参与编译的分类优先；
+	* 在很多的情况下，往往是给系统自带的类添加分类，如NSObject和NSString，因为有的时候，系统类可能并不能满足我们的要求。
+	* 在大规模的应用中，通常把相应的功能写成一个分类，可以有无限个分类，对原有类进行扩充，一般分模块写，一个模块一个分类。
+	
+###15. 现在大部分应用都采用ARC,那么是否就意味着我们不用再去管理内存了,如果需要的话,举几个简答你的例子
+* 在使用block的时候如果block内部用到了一些当前控制器的属性, 要用__weak修饰一下,放置循环引用
+* 在调用一些C语言库的时候,需要用其对应的释放啊,例如绘制图片
+* 我们需要在控制器的的dealloc方法中移除动画,
+* 子线程中没有办法访问主线程的autoreleasepool,需要给子线程添加autoreleasepool,保证在子线程中初始化的变量及时释放
+
+###16. 提供几种方式去实现线程1,线程2,线程3的执行顺序
+* NSOperation和NSOperationQueue 结合使用, 在NSOperation子类创建对象添加依赖
+* 使用GCD中dispatch_barrier_asyn(dispatch_queue_t queue,block) 这个函数的
+* 使用GCD中线程组,dispatch_group_notify 这个函数
+
+###17. 请说明一下修饰符的作用
+* static C中static用在局部变量，局部变量在代码块结束后将不会回收，下次使用保持上次使用后的值；static用在方法与全局变量，表示该方法与全局变量只在本文件中有效，外部无法使用extern引用该全局变量或方法。
+* __block 在block中修改外部变量的值
+* __bridge 桥接oc c
+* const const修饰的数据类型是指常类型,常类型的变量或对象的值是不能被更新的
 
 
  
@@ -193,4 +237,3 @@ textField.placeholder = @"username is in here!";  //设置placehoder的字
 
 
 	
-
